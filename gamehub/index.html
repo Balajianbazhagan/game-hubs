@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Full Game Hub</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #1e3c72, #2a5298);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    header {
+      background-color: #000;
+      padding: 20px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+      color: #4fc3f7;
+    }
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      background: #222;
+      padding: 10px;
+      justify-content: center;
+      gap: 10px;
+    }
+    nav button {
+      background: #4fc3f7;
+      border: none;
+      color: #000;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    main {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .game-container {
+      display: none;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 0 25px rgba(0,0,0,0.6);
+      width: 100%;
+      max-width: 800px;
+      text-align: center;
+      animation: fadeIn 0.5s ease;
+    }
+    .active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    button.game-btn {
+      margin: 10px;
+      padding: 15px 25px;
+      font-size: 18px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      background: #4fc3f7;
+      color: #000;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    button.game-btn:hover {
+      background: #0288d1;
+      color: #fff;
+    }
+    .win-animation {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 400px;
+      max-width: 90%;
+      z-index: 9999;
+      display: none;
+      pointer-events: none;
+      animation: popFade 1.2s ease-out;
+    }
+    .win-animation img {
+      width: 100%;
+      border-radius: 16px;
+    }
+    @keyframes popFade {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+      40% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+    }
+    footer {
+      background: #111;
+      color: #ccc;
+      text-align: center;
+      padding: 15px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header>🎮 Full Game Hub</header>
+  <nav>
+    <button onclick="switchGame('rps')">Rock Paper Scissors</button>
+    <button onclick="switchGame('guess')">Guess Number</button>
+    <button onclick="switchGame('magic')">Mind Game</button>
+    <button onclick="switchGame('dice')">Dice</button>
+    <button onclick="switchGame('flip')">Coin Flip</button>
+    <button onclick="switchGame('math')">Math Drill</button>
+    <!-- Add other buttons if needed -->
+  </nav>
+  <main>
+    <div id="rps" class="game-container active">
+      <h2>Rock Paper Scissors</h2>
+      <button class="game-btn" onclick="playRPS('Rock')">🪨</button>
+      <button class="game-btn" onclick="playRPS('Paper')">📄</button>
+      <button class="game-btn" onclick="playRPS('Scissor')">✂️</button>
+      <div id="rps-result" style="margin-top:20px;"></div>
+    </div>
+    <div id="guess" class="game-container">
+      <h2>Guess a Number</h2>
+      <input type="number" id="guessInput" placeholder="1 to 10">
+      <button class="game-btn" onclick="checkGuess()">Guess</button>
+      <div id="guess-result"></div>
+    </div>
+    <div id="magic" class="game-container">
+      <h2>Mind Game</h2>
+      <p id="magic-step">Step 1: Think of a number.</p>
+      <button class="game-btn" onclick="nextMagicStep()">Next</button>
+    </div>
+    <div id="dice" class="game-container">
+      <h2>Dice Roll 🎲</h2>
+      <button class="game-btn" onclick="rollDice()">Roll</button>
+      <div id="dice-result"></div>
+    </div>
+    <div id="flip" class="game-container">
+      <h2>Coin Flip 🪙</h2>
+      <button class="game-btn" onclick="flipCoin('Heads')">Heads</button>
+      <button class="game-btn" onclick="flipCoin('Tails')">Tails</button>
+      <div id="flip-result"></div>
+    </div>
+    <div id="math" class="game-container">
+      <h2>Math Drill</h2>
+      <p id="math-question"></p>
+      <input type="number" id="math-answer">
+      <button class="game-btn" onclick="checkMath()">Submit</button>
+      <div id="math-result"></div>
+    </div>
+  </main>
+
+  <!-- Win Effect Ajith GIF -->
+  <div id="win-effect" class="win-animation">
+    <img src="./ajith-ajithkumar.gif" alt="Ajith Win">
+  </div>
+
+  <footer>
+    &copy; 2025 GameHub. All rights reserved.
+  </footer>
+  <script>
+    const games = ['rps', 'guess', 'magic', 'dice', 'flip', 'math'];
+    let magicStep = 0;
+    const magicSteps = [
+      "Multiply it by 2",
+      "Add 10",
+      "Divide by 2",
+      "Subtract your original number",
+      "The result is 5! 🎉"
+    ];
+    let mathA = 0, mathB = 0;
+
+    function switchGame(id) {
+      games.forEach(g => document.getElementById(g).classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      if (id === 'math') generateMath();
+    }
+    function playRPS(choice) {
+      const comp = ['Rock','Paper','Scissor'][Math.floor(Math.random()*3)];
+      const win = (choice==='Rock'&&comp==='Scissor')||(choice==='Paper'&&comp==='Rock')||(choice==='Scissor'&&comp==='Paper');
+      const msg = comp===choice?"It's a tie! 🤝":win?"You win! 🎉":"You lose! 😞";
+      document.getElementById("rps-result").innerHTML = `Computer chose ${comp}<br>${msg}`;
+      if (win) showFireworks();
+    }
+    function checkGuess() {
+      const guess = parseInt(document.getElementById("guessInput").value);
+      const correct = Math.floor(Math.random()*10)+1;
+      const result = guess === correct ? `Correct! 🎯 It was ${correct}` : `Nope! It was ${correct}`;
+      document.getElementById("guess-result").innerText = result;
+      if (guess === correct) showFireworks();
+    }
+    function nextMagicStep() {
+      if (magicStep < magicSteps.length) {
+        document.getElementById("magic-step").innerText = `Step ${magicStep+2}: ${magicSteps[magicStep]}`;
+        if (magicStep === magicSteps.length - 1) showFireworks();
+        magicStep++;
+      } else {
+        magicStep = 0;
+        document.getElementById("magic-step").innerText = "Step 1: Think of a number.";
+      }
+    }
+    function rollDice() {
+      const value = Math.floor(Math.random() * 6) + 1;
+      document.getElementById("dice-result").innerText = `🎲 ${value}`;
+      if (value === 6) showFireworks();
+    }
+    function flipCoin(choice) {
+      const result = ['Heads','Tails'][Math.floor(Math.random()*2)];
+      const msg = result === choice ? `🎉 It's ${result}! You win!` : `😞 It's ${result}! You lose.`;
+      document.getElementById("flip-result").innerText = msg;
+      if (result === choice) showFireworks();
+    }
+    function generateMath() {
+      mathA = Math.floor(Math.random()*10);
+      mathB = Math.floor(Math.random()*10);
+      document.getElementById("math-question").innerText = `What is ${mathA} + ${mathB}?`;
+    }
+    function checkMath() {
+      const answer = parseInt(document.getElementById("math-answer").value);
+      const correct = mathA + mathB;
+      const msg = answer === correct ? `Correct! 🎉` : `Wrong! The answer was ${correct}`;
+      document.getElementById("math-result").innerText = msg;
+      if (answer === correct) showFireworks();
+    }
+    function showFireworks() {
+      const fx = document.getElementById("win-effect");
+      fx.style.display = 'block';
+      setTimeout(() => fx.style.display = 'none', 1200);
+    }
+  </script>
+</body>
+</html>
